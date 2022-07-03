@@ -9,12 +9,16 @@ import (
 	"github.com/rs/cors"
 )
 
-type Http struct {
+// plugin name
+const name = "roadrunner_http_test"
+
+// Plugin structure should have exactly the `Plugin` name to be found by RR
+type Plugin struct {
 	client http.Client
 	server *http.Server
 }
 
-func (h *Http) Init() error {
+func (p *Plugin) Init() error {
 	tr := &http.Transport{
 		MaxIdleConns:       10,
 		IdleConnTimeout:    30 * time.Second,
@@ -24,7 +28,7 @@ func (h *Http) Init() error {
 		Transport: tr,
 		Timeout:   60,
 	}
-	h.client = client
+	p.client = client
 
 	r := mux.NewRouter()
 
@@ -35,7 +39,7 @@ func (h *Http) Init() error {
 		AllowedHeaders:   []string{"*"},
 	})
 
-	r.Methods("GET").HandlerFunc(h.helloWorld).Path("/hello_world")
+	r.Methods("GET").HandlerFunc(p.helloWorld).Path("/hello_world")
 
 	// just as sample, we put server here
 	server := &http.Server{
@@ -46,20 +50,20 @@ func (h *Http) Init() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	h.server = server
+	p.server = server
 
 	return nil
 }
 
-func (h *Http) Serve() chan error {
+func (p *Plugin) Serve() chan error {
 	errCh := make(chan error, 1)
 
-	f := h.server.Handler
+	f := p.server.Handler
 
-	h.server.Handler = f
+	p.server.Handler = f
 
 	go func() {
-		err := h.server.ListenAndServe()
+		err := p.server.ListenAndServe()
 		if err == http.ErrServerClosed {
 			return
 		} else {
@@ -69,8 +73,8 @@ func (h *Http) Serve() chan error {
 	return errCh
 }
 
-func (h *Http) Stop() error {
-	err := h.server.Shutdown(context.Background())
+func (p *Plugin) Stop() error {
+	err := p.server.Shutdown(context.Background())
 	if err != nil {
 		return err
 	}
@@ -78,12 +82,8 @@ func (h *Http) Stop() error {
 }
 
 // sselect just to not collide with select keyword
-func (h *Http) helloWorld(writer http.ResponseWriter, request *http.Request) {
+func (p *Plugin) helloWorld(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 
 	_, _ = writer.Write([]byte("Hello world"))
-}
-
-func (h *Http) Name() string {
-	return "super http service"
 }
