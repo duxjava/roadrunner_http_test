@@ -1,4 +1,4 @@
-module roadrunner_http_test
+module github.com/duxjava/roadrunner_http_test
 
 go 1.18
 
