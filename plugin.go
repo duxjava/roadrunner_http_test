@@ -109,6 +109,6 @@ func (p *Plugin) RPC() interface{} {
 
 // Generate this is the function exposed to PHP $rpc->call(), can be any name
 func (r *rpc) Generate(input string, output *string) error {
-	*output = "hello world"
+	*output = input
 	return nil
 }
