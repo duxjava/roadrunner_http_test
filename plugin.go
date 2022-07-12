@@ -87,3 +87,22 @@ func (p *Plugin) helloWorld(writer http.ResponseWriter, request *http.Request) {
 
 	_, _ = writer.Write([]byte("Hello world"))
 }
+
+// ----------------------------------------------------------------------------
+// RPC
+// ----------------------------------------------------------------------------
+
+type rpc struct {
+	srv *Plugin
+}
+
+// RPC interface implementation, RR will find this interface and automatically expose the RPC endpoint with methods (rpc structure)
+func (p *Plugin) RPC() interface{} {
+	return &rpc{}
+}
+
+// Generate this is the function exposed to PHP $rpc->call(), can be any name
+func (r *rpc) Generate(input string, output *string) error {
+	*output = "hello world"
+	return nil
+}
