@@ -56,6 +56,7 @@ func (p *Plugin) Init() error {
 }
 
 func (p *Plugin) Serve() chan error {
+
 	errCh := make(chan error, 1)
 
 	f := p.server.Handler
@@ -86,6 +87,11 @@ func (p *Plugin) helloWorld(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 
 	_, _ = writer.Write([]byte("Hello world"))
+}
+
+// Name this is not mandatory, but if you implement this interface and provide a plugin name, RR will expose the RPC method of this plugin using this name
+func (p *Plugin) Name() string {
+	return name
 }
 
 // ----------------------------------------------------------------------------
