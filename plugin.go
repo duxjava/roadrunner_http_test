@@ -1,7 +1,13 @@
 package roadrunner_http_test
 
 import (
+	"database/sql"
+	"encoding/json"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/roadrunner-server/api/v2/plugins/config"
+	"github.com/roadrunner-server/errors"
 	"go.uber.org/zap"
+	"time"
 )
 
 // plugin name
@@ -11,11 +17,58 @@ const name = "roadrunner_http_test"
 type Plugin struct {
 	clicks chan string
 	log    *zap.Logger
+	cfg    *Config
+	db     *sql.DB
 }
 
-func (p *Plugin) Init(log *zap.Logger) error {
+type Click struct {
+	Id       int    `json:"id"`
+	Day      string `json:"day"`
+	IsUnique bool   `json:"isUnique"`
+}
+
+type Link struct {
+	Id     int    `json:"id"`
+	UserId string `json:"user_id"`
+	Url    bool   `json:"url"`
+	GenUrl bool   `json:"gen_url"`
+}
+
+func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 	p.clicks = make(chan string)
 	p.log = log
+
+	const op = errors.Op("my_plugin_init")
+	if !cfg.Has(name) {
+		return errors.E(errors.Disabled)
+	}
+
+	p.cfg = &Config{}
+	err := cfg.UnmarshalKey(name, p.cfg)
+
+	if err != nil {
+		return errors.E(op, err)
+	}
+
+	p.cfg.InitDefaults()
+
+	db, err := sql.Open("mysql", p.cfg.MysqlConnection)
+	db.SetMaxIdleConns(p.cfg.MysqlMaxidle)
+	db.SetMaxOpenConns(p.cfg.MysqlMaxopen)
+	db.SetConnMaxLifetime(time.Second * p.cfg.MysqlLifetime)
+
+	if err != nil {
+		return errors.E(op, err)
+	}
+
+	err = db.Ping()
+
+	if err != nil {
+		return errors.E(op, err)
+	}
+
+	p.db = db
+
 	return nil
 }
 
@@ -26,8 +79,23 @@ func (p *Plugin) Serve() chan error {
 	go func() {
 		for {
 			select {
-			case click := <-p.clicks:
-				p.log.Info(click)
+			case c := <-p.clicks:
+				p.log.Info(c)
+				click := Click{}
+				_ = json.Unmarshal([]byte(c), &click)
+
+				link := Link{}
+
+				err := p.db.QueryRow("SELECT id, user_id, url, gen_url FROM links WHERE id = ?", click.Id).Scan(&link.Id, &link.UserId, &link.Url, &link.GenUrl)
+
+				if err != nil {
+					panic(err.Error()) // proper error handling instead of panic in your app
+				}
+
+				s, _ := json.Marshal(link)
+
+				p.log.Info(string(s))
+
 			default:
 			}
 		}
