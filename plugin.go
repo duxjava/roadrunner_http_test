@@ -7,12 +7,12 @@ const name = "roadrunner_http_test"
 
 // Plugin structure should have exactly the `Plugin` name to be found by RR
 type Plugin struct {
-	clicks chan string
+	clicks *chan string
 	log    *zap.Logger
 }
 
 func (p *Plugin) Init(log *zap.Logger) error {
-	p.clicks = make(chan string)
+	*p.clicks = make(chan string)
 	p.log = log
 	return nil
 }
@@ -24,7 +24,7 @@ func (p *Plugin) Serve() chan error {
 	go func() {
 		for {
 			select {
-			case click := <-p.clicks:
+			case click := <-*p.clicks:
 				p.log.Info(click)
 			default:
 			}
@@ -57,7 +57,7 @@ func (p *Plugin) RPC() interface{} {
 
 // AddClick Generate this is the function exposed to PHP $rpc->call(), can be any name
 func (r *rpc) AddClick(input string, output *string) error {
-	r.srv.clicks <- input
+	*r.srv.clicks <- input
 	*output = input
 	return nil
 }
