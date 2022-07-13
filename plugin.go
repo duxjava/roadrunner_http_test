@@ -7,7 +7,6 @@ import (
 	"github.com/roadrunner-server/api/v2/plugins/config"
 	"github.com/roadrunner-server/errors"
 	"go.uber.org/zap"
-	"time"
 )
 
 // plugin name
@@ -50,22 +49,22 @@ func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 		return errors.E(op, err)
 	}
 
-	db, err := sql.Open("mysql", p.cfg.Mysql.Connection)
-	db.SetMaxIdleConns(p.cfg.Mysql.Maxidle)
-	db.SetMaxOpenConns(p.cfg.Mysql.Maxopen)
-	db.SetConnMaxLifetime(time.Second * p.cfg.Mysql.Lifetime)
+	//db, err := sql.Open("mysql", p.cfg.Mysql.Connection)
+	//db.SetMaxIdleConns(p.cfg.Mysql.Maxidle)
+	//db.SetMaxOpenConns(p.cfg.Mysql.Maxopen)
+	//db.SetConnMaxLifetime(time.Second * p.cfg.Mysql.Lifetime)
 
-	if err != nil {
-		return errors.E(op, err)
-	}
-
-	err = db.Ping()
-
-	if err != nil {
-		return errors.E(op, err)
-	}
-
-	p.db = db
+	//if err != nil {
+	//	return errors.E(op, err)
+	//}
+	//
+	//err = db.Ping()
+	//
+	//if err != nil {
+	//	return errors.E(op, err)
+	//}
+	//
+	//p.db = db
 
 	return nil
 }
