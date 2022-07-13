@@ -50,8 +50,6 @@ func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 		return errors.E(op, err)
 	}
 
-	p.cfg.InitDefaults()
-
 	db, err := sql.Open("mysql", p.cfg.Mysql.Connection)
 	db.SetMaxIdleConns(p.cfg.Mysql.Maxidle)
 	db.SetMaxOpenConns(p.cfg.Mysql.Maxopen)
