@@ -52,10 +52,10 @@ func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 
 	p.cfg.InitDefaults()
 
-	db, err := sql.Open("mysql", p.cfg.MysqlConnection)
-	db.SetMaxIdleConns(p.cfg.MysqlMaxidle)
-	db.SetMaxOpenConns(p.cfg.MysqlMaxopen)
-	db.SetConnMaxLifetime(time.Second * p.cfg.MysqlLifetime)
+	db, err := sql.Open("mysql", p.cfg.Mysql.Connection)
+	db.SetMaxIdleConns(p.cfg.Mysql.Maxidle)
+	db.SetMaxOpenConns(p.cfg.Mysql.Maxopen)
+	db.SetConnMaxLifetime(time.Second * p.cfg.Mysql.Lifetime)
 
 	if err != nil {
 		return errors.E(op, err)

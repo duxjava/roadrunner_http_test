@@ -3,10 +3,14 @@ package roadrunner_http_test
 import "time"
 
 type Config struct {
-	MysqlConnection string        `mysql:"connection"`
-	MysqlLifetime   time.Duration `mysql:"lifetime"`
-	MysqlMaxidle    int           `mysql:"maxidle"`
-	MysqlMaxopen    int           `mysql:"maxopen"`
+	Mysql Mysql `mapstructure:"mysql"`
+}
+
+type Mysql struct {
+	Connection string        `mapstructure:"connection"`
+	Lifetime   time.Duration `mapstructure:"lifetime"`
+	Maxidle    int           `mapstructure:"maxidle"`
+	Maxopen    int           `mapstructure:"maxopen"`
 }
 
 func (c *Config) InitDefaults() {
