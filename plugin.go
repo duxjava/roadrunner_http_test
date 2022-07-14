@@ -84,9 +84,9 @@ func (p *Plugin) Serve() chan error {
 					}
 
 					if click.IsUnique {
-						_, err = p.db.Exec("INSERT INTO daily (day, link_id, clicks, unique_clicks) VALUES (?, ?, 1, 1) ON DUPLICATE KEY UPDATE clicks=clicks+1, unique_clicks=unique_clicks+1;", click.Day, click.LinkId)
+						_, err = p.db.Exec("INSERT INTO daily (day, link_id, clicks, unique_clicks, created_at, updated_at) VALUES (?, ?, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)ON DUPLICATE KEY UPDATE clicks=clicks+1, unique_clicks=unique_clicks+1, updated_at=CURRENT_TIMESTAMP;", click.Day, click.LinkId)
 					} else {
-						_, err = p.db.Exec("INSERT INTO daily (day, link_id, clicks) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE clicks=clicks+1;", click.Day, click.LinkId)
+						_, err = p.db.Exec("INSERT INTO daily (day, link_id, clicks, created_at, updated_at) VALUES (?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE clicks=clicks+1, updated_at=CURRENT_TIMESTAMP;", click.Day, click.LinkId)
 					}
 
 					if err != nil {
