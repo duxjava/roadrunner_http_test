@@ -80,24 +80,25 @@ func (p *Plugin) Serve() chan error {
 		for {
 			select {
 			case c := <-p.clicks:
-				p.log.Info(c)
-				click := Click{}
-				_ = json.Unmarshal([]byte(c), &click)
+				go func() {
+					p.log.Info(c)
+					click := Click{}
+					_ = json.Unmarshal([]byte(c), &click)
 
-				link := Link{}
+					link := Link{}
 
-				time.Sleep(8 * time.Second)
+					time.Sleep(8 * time.Second)
 
-				err := p.db.QueryRow("SELECT id, user_id, url, gen_url FROM links WHERE id = ?", click.Id).Scan(&link.Id, &link.UserId, &link.Url, &link.GenUrl)
+					err := p.db.QueryRow("SELECT id, user_id, url, gen_url FROM links WHERE id = ?", click.Id).Scan(&link.Id, &link.UserId, &link.Url, &link.GenUrl)
 
-				if err != nil {
-					panic(err.Error()) // proper error handling instead of panic in your app
-				}
+					if err != nil {
+						panic(err.Error()) // proper error handling instead of panic in your app
+					}
 
-				s, _ := json.Marshal(link)
+					s, _ := json.Marshal(link)
 
-				p.log.Info(string(s))
-
+					p.log.Info(string(s))
+				}()
 			default:
 			}
 		}
