@@ -30,8 +30,8 @@ type Click struct {
 type Link struct {
 	Id     int    `json:"id"`
 	UserId string `json:"user_id"`
-	Url    bool   `json:"url"`
-	GenUrl bool   `json:"gen_url"`
+	Url    string `json:"url"`
+	GenUrl string `json:"gen_url"`
 }
 
 func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
