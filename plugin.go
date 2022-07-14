@@ -22,16 +22,9 @@ type Plugin struct {
 }
 
 type Click struct {
-	Id       int    `json:"id"`
+	LinkId   int    `json:"link_id"`
 	Day      string `json:"day"`
-	IsUnique bool   `json:"isUnique"`
-}
-
-type Link struct {
-	Id     int    `json:"id"`
-	UserId string `json:"user_id"`
-	Url    string `json:"url"`
-	GenUrl string `json:"gen_url"`
+	IsUnique bool   `json:"is_unique"`
 }
 
 func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
@@ -81,23 +74,24 @@ func (p *Plugin) Serve() chan error {
 			select {
 			case c := <-p.clicks:
 				go func() {
+
 					p.log.Info(c)
 					click := Click{}
-					_ = json.Unmarshal([]byte(c), &click)
-
-					link := Link{}
-
-					time.Sleep(8 * time.Second)
-
-					err := p.db.QueryRow("SELECT id, user_id, url, gen_url FROM links WHERE id = ?", click.Id).Scan(&link.Id, &link.UserId, &link.Url, &link.GenUrl)
+					err := json.Unmarshal([]byte(c), &click)
 
 					if err != nil {
 						panic(err.Error()) // proper error handling instead of panic in your app
 					}
 
-					s, _ := json.Marshal(link)
+					if click.IsUnique {
+						_, err = p.db.Exec("INSERT INTO daily (day, link_id, clicks, unique_clicks) VALUES (?, ?, 1, 1) ON DUPLICATE KEY UPDATE clicks=clicks+1, unique_clicks=unique_clicks+1;", click.Day, click.LinkId)
+					} else {
+						_, err = p.db.Exec("INSERT INTO daily (day, link_id, clicks) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE clicks=clicks+1;", click.Day, click.LinkId)
+					}
 
-					p.log.Info(string(s))
+					if err != nil {
+						panic(err.Error()) // proper error handling instead of panic in your app
+					}
 				}()
 			default:
 			}
