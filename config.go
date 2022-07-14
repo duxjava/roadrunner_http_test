@@ -12,3 +12,6 @@ type Mysql struct {
 	Maxidle    int           `mapstructure:"maxidle"`
 	Maxopen    int           `mapstructure:"maxopen"`
 }
+
+func (c *Config) InitDefaults() {
+}

@@ -38,7 +38,7 @@ func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 	p.clicks = make(chan string)
 	p.log = log
 
-	const op = errors.Op("my_plugin_init")
+	const op = errors.Op("roadrunner_http_test_init")
 	if !cfg.Has(name) {
 		return errors.E(errors.Disabled)
 	}
@@ -49,6 +49,8 @@ func (p *Plugin) Init(cfg config.Configurer, log *zap.Logger) error {
 	if err != nil {
 		return errors.E(op, err)
 	}
+
+	p.cfg.InitDefaults()
 
 	db, err := sql.Open("mysql", p.cfg.Mysql.Connection)
 	db.SetMaxIdleConns(p.cfg.Mysql.Maxidle)
