@@ -86,6 +86,8 @@ func (p *Plugin) Serve() chan error {
 
 				link := Link{}
 
+				time.Sleep(8 * time.Second)
+
 				err := p.db.QueryRow("SELECT id, user_id, url, gen_url FROM links WHERE id = ?", click.Id).Scan(&link.Id, &link.UserId, &link.Url, &link.GenUrl)
 
 				if err != nil {
